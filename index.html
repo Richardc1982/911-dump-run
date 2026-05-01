@@ -28,25 +28,19 @@
         <h1 class="text-3xl font-black text-orange-500">911 Dump Run</h1>
         <p class="text-slate-500 text-sm mt-1">Fast material delivery to your door</p>
       </div>
-
-      <!-- Tabs -->
       <div class="flex bg-slate-100 rounded-xl p-1 mb-6">
         <button onclick="setMode('signin')" id="tab-signin" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-slate-800 shadow">Sign In</button>
         <button onclick="setMode('signup')" id="tab-signup" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-slate-400">Sign Up</button>
       </div>
-
       <div id="signup-fields" class="hidden mb-4 space-y-3">
         <input id="input-name" type="text" placeholder="Full Name" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:border-orange-400" />
         <input id="input-phone" type="tel" placeholder="Phone Number (optional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:border-orange-400" />
       </div>
-
       <div class="space-y-3">
         <input id="input-email" type="email" placeholder="Email Address" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:border-orange-400" />
         <input id="input-password" type="password" placeholder="Password" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:border-orange-400" />
       </div>
-
       <button onclick="handleAuth()" id="btn-auth" class="mt-5 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-colors">Sign In</button>
-
       <div id="auth-error" class="mt-3 text-red-500 text-sm text-center hidden"></div>
       <p class="mt-4 text-xs text-slate-400 text-center">By continuing you agree to 911 Dump Run Terms of Service</p>
     </div>
@@ -54,12 +48,14 @@
 
   <!-- Order Wizard -->
   <div id="screen-order" class="hidden min-h-screen">
-    <!-- Header -->
     <div class="bg-white border-b border-slate-100 px-5 py-4 sticky top-0 z-10">
       <div class="max-w-lg mx-auto">
         <div class="flex justify-between items-center mb-3">
           <span class="text-lg font-black text-orange-500">🚛 911 Dump Run</span>
-          <button onclick="signOut()" class="text-slate-400 text-sm font-semibold">Sign Out</button>
+          <div class="flex items-center gap-3">
+            <button onclick="openSettings()" title="Pricing Settings" class="text-slate-400 hover:text-orange-500 transition-colors text-xl">⚙️</button>
+            <button onclick="signOut()" class="text-slate-400 text-sm font-semibold">Sign Out</button>
+          </div>
         </div>
         <div class="flex gap-1 mb-2" id="progress-dots"></div>
         <p id="step-label" class="text-xs text-slate-400 font-semibold"></p>
@@ -90,7 +86,7 @@
             <button onclick="changeQty(1)" class="w-12 h-12 rounded-full bg-orange-100 hover:bg-orange-200 text-2xl font-bold text-orange-600 transition-colors">+</button>
           </div>
           <div class="bg-orange-50 rounded-xl p-4 text-center">
-            <p class="text-sm text-slate-500">Estimated cost</p>
+            <p class="text-sm text-slate-500">Material cost</p>
             <p id="price-estimate" class="text-2xl font-black text-orange-500 mt-1">$0.00</p>
           </div>
         </div>
@@ -99,7 +95,7 @@
       <!-- Step 3: Service Level -->
       <div class="step" id="step-3">
         <h2 class="text-xl font-bold text-slate-800 mb-2">Service level</h2>
-        <p class="text-slate-500 text-sm mb-5">How quickly do you need it?</p>
+        <p class="text-slate-500 text-sm mb-5">How would you like your material delivered?</p>
         <div class="space-y-3">
           <div class="card-select" onclick="selectService('drop_and_go')" id="svc-drop_and_go">
             <div class="flex justify-between items-start">
@@ -131,55 +127,76 @@
         </div>
       </div>
 
-      <!-- Step 4: Address -->
+      <!-- Step 4: Address + Distance -->
       <div class="step" id="step-4">
         <h2 class="text-xl font-bold text-slate-800 mb-2">Delivery address</h2>
         <p class="text-slate-500 text-sm mb-5">Where should we deliver?</p>
         <div class="space-y-3">
           <input id="input-address" type="text" placeholder="Street address" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:border-orange-400" />
           <input id="input-city" type="text" placeholder="City, State ZIP" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:border-orange-400" />
+          <div>
+            <label class="text-xs font-semibold text-slate-500 block mb-1.5">Distance from our location (miles)</label>
+            <input id="input-miles" type="number" min="1" step="1" placeholder="e.g. 12" oninput="updateDeliveryPreview()" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:border-orange-400" />
+            <div id="delivery-fee-preview" class="mt-2 text-xs text-slate-500 bg-orange-50 rounded-lg px-3 py-2 hidden"></div>
+          </div>
           <textarea id="input-notes" placeholder="Delivery notes (optional — gate codes, landmarks…)" rows="3" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:border-orange-400 resize-none"></textarea>
         </div>
       </div>
 
-      <!-- Step 5: Review & Confirm -->
+      <!-- Step 5: Review -->
       <div class="step" id="step-5">
         <h2 class="text-xl font-bold text-slate-800 mb-5">Review your order</h2>
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <div class="p-5 space-y-3">
-            <div class="flex justify-between">
-              <span class="text-slate-500 text-sm">Material</span>
-              <span id="rev-material" class="text-slate-800 font-semibold text-sm"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-500 text-sm">Quantity</span>
-              <span id="rev-qty" class="text-slate-800 font-semibold text-sm"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-500 text-sm">Service</span>
-              <span id="rev-service" class="text-slate-800 font-semibold text-sm"></span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-500 text-sm">Delivery to</span>
-              <span id="rev-address" class="text-slate-800 font-semibold text-sm text-right max-w-[55%]"></span>
-            </div>
-            <div class="border-t border-slate-100 pt-3 flex justify-between">
-              <span class="text-slate-800 font-bold">Total</span>
-              <span id="rev-total" class="text-orange-500 font-black text-lg"></span>
-            </div>
+            <div class="flex justify-between"><span class="text-slate-500 text-sm">Material</span><span id="rev-material" class="text-slate-800 font-semibold text-sm"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500 text-sm">Quantity</span><span id="rev-qty" class="text-slate-800 font-semibold text-sm"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500 text-sm">Material cost</span><span id="rev-material-cost" class="text-slate-800 font-semibold text-sm"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500 text-sm">Service</span><span id="rev-service" class="text-slate-800 font-semibold text-sm"></span></div>
+            <div class="flex justify-between" id="rev-svc-fee-row"><span class="text-slate-500 text-sm">Service fee</span><span id="rev-service-fee" class="text-slate-800 font-semibold text-sm"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500 text-sm">Delivery fee</span><span id="rev-delivery-fee" class="text-slate-800 font-semibold text-sm"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500 text-sm">Deliver to</span><span id="rev-address" class="text-slate-800 font-semibold text-sm text-right max-w-[55%]"></span></div>
+            <div class="border-t border-slate-100 pt-3 flex justify-between"><span class="text-slate-800 font-bold">Total</span><span id="rev-total" class="text-orange-500 font-black text-lg"></span></div>
           </div>
         </div>
         <div id="order-error" class="mt-3 text-red-500 text-sm hidden"></div>
       </div>
 
-      <!-- Inline step error -->
       <div id="step-error" class="mt-3 text-red-500 text-sm text-center hidden"></div>
-
-      <!-- Navigation Buttons -->
       <div class="flex gap-3 mt-3">
         <button id="btn-back" onclick="prevStep()" class="hidden flex-1 border-2 border-slate-200 text-slate-600 font-bold py-4 rounded-xl hover:bg-slate-50 transition-colors">← Back</button>
         <button id="btn-next" onclick="nextStep()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-colors">Continue →</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="modal-settings" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+      <div class="flex justify-between items-center mb-1">
+        <h3 class="text-lg font-black text-slate-800">⚙️ Delivery Pricing</h3>
+        <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold leading-none">×</button>
+      </div>
+      <p class="text-xs text-slate-400 mb-5">Changes take effect immediately for all new orders</p>
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm font-semibold text-slate-700 block mb-1">Base Delivery Fee ($)</label>
+          <input id="set-base-fee" type="number" min="0" step="1" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <p class="text-xs text-slate-400 mt-1">Flat fee on every order within the free radius</p>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-slate-700 block mb-1">Free Radius (miles)</label>
+          <input id="set-radius" type="number" min="1" step="1" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <p class="text-xs text-slate-400 mt-1">No extra mileage charge within this distance</p>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-slate-700 block mb-1">Extra Charge Per Mile ($)</label>
+          <input id="set-per-mile" type="number" min="0" step="0.50" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <p class="text-xs text-slate-400 mt-1">Added for each mile beyond the free radius</p>
+        </div>
+      </div>
+      <div id="settings-error" class="mt-3 text-red-500 text-sm hidden"></div>
+      <div id="settings-success" class="mt-3 text-green-600 text-sm font-semibold hidden">✓ Pricing saved!</div>
+      <button onclick="saveSettings()" id="btn-save-settings" class="mt-5 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-colors">Save Changes</button>
     </div>
   </div>
 
@@ -194,6 +211,7 @@
         <div class="flex justify-between"><span class="text-slate-500 text-sm">Material</span><span id="conf-material" class="text-slate-800 font-semibold text-sm"></span></div>
         <div class="flex justify-between"><span class="text-slate-500 text-sm">Quantity</span><span id="conf-qty" class="text-slate-800 font-semibold text-sm"></span></div>
         <div class="flex justify-between"><span class="text-slate-500 text-sm">Service</span><span id="conf-service" class="text-slate-800 font-semibold text-sm"></span></div>
+        <div class="flex justify-between"><span class="text-slate-500 text-sm">Delivery fee</span><span id="conf-delivery-fee" class="text-slate-800 font-semibold text-sm"></span></div>
         <div class="flex justify-between border-t border-slate-100 pt-3"><span class="text-slate-800 font-bold">Total</span><span id="conf-total" class="text-orange-500 font-black"></span></div>
       </div>
       <button onclick="newOrder()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-colors">Place Another Order</button>
@@ -203,26 +221,23 @@
 <script>
 const SUPABASE_URL = 'https://isyknvihgrbdzktbfhim.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Qkh5TBTcRKAHMr4yuarD3A_Nen9h9ET';
-
 let sb;
-try {
-  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-} catch(e) {
-  console.warn('Supabase init error:', e);
-}
+try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase init:', e); }
 
 let currentStep = 1;
 const TOTAL_STEPS = 5;
-let order = { material: null, qty: 1, serviceLevel: 'drop_and_go', address: '', notes: '' };
+let order = { material: null, qty: 1, serviceLevel: 'drop_and_go', address: '', notes: '', miles: 0 };
 let materials = [];
 let authMode = 'signin';
 let currentUser = null;
+let pricing = { base_delivery_fee: 385, free_radius_miles: 25, per_mile_rate: 3 };
 
-const SERVICE_FEES = { drop_and_go: 0, deliver_and_spread: 75, full_service: 250 };
+const SERVICE_FEES   = { drop_and_go: 0, deliver_and_spread: 75, full_service: 250 };
 const SERVICE_LABELS = { drop_and_go: '🕐 Drop & Go', deliver_and_spread: '🔨 Deliver + Spread', full_service: '⭐ Full Service' };
 
 window.addEventListener('DOMContentLoaded', async () => {
   selectService('drop_and_go');
+  await loadPricing();
   if (!sb) { showScreen('auth'); return; }
   try {
     const { data: { session } } = await sb.auth.getSession();
@@ -230,6 +245,76 @@ window.addEventListener('DOMContentLoaded', async () => {
     else showScreen('auth');
   } catch(e) { showScreen('auth'); }
 });
+
+async function loadPricing() {
+  if (!sb) return;
+  try {
+    const { data } = await sb.from('settings').select('key,value');
+    if (!data) return;
+    data.forEach(r => {
+      if (r.key === 'base_delivery_fee') pricing.base_delivery_fee = parseFloat(r.value);
+      if (r.key === 'free_radius_miles') pricing.free_radius_miles = parseFloat(r.value);
+      if (r.key === 'per_mile_rate')     pricing.per_mile_rate     = parseFloat(r.value);
+    });
+  } catch(e) {}
+}
+
+function calcDeliveryFee(miles) {
+  const extra = Math.max(0, miles - pricing.free_radius_miles);
+  return pricing.base_delivery_fee + extra * pricing.per_mile_rate;
+}
+
+function updateDeliveryPreview() {
+  const miles = parseFloat(document.getElementById('input-miles').value) || 0;
+  const el = document.getElementById('delivery-fee-preview');
+  if (miles > 0) {
+    const fee = calcDeliveryFee(miles);
+    const extra = Math.max(0, miles - pricing.free_radius_miles);
+    el.classList.remove('hidden');
+    el.textContent = extra > 0
+      ? `Delivery fee: $${pricing.base_delivery_fee.toFixed(2)} base + $${(extra * pricing.per_mile_rate).toFixed(2)} distance (${extra} extra miles) = $${fee.toFixed(2)}`
+      : `Delivery fee: $${fee.toFixed(2)} (within ${pricing.free_radius_miles}-mile radius)`;
+  } else { el.classList.add('hidden'); }
+}
+
+function openSettings() {
+  document.getElementById('set-base-fee').value = pricing.base_delivery_fee;
+  document.getElementById('set-radius').value   = pricing.free_radius_miles;
+  document.getElementById('set-per-mile').value = pricing.per_mile_rate;
+  document.getElementById('settings-error').classList.add('hidden');
+  document.getElementById('settings-success').classList.add('hidden');
+  document.getElementById('modal-settings').classList.remove('hidden');
+}
+
+function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
+
+async function saveSettings() {
+  const baseFee = parseFloat(document.getElementById('set-base-fee').value);
+  const radius  = parseFloat(document.getElementById('set-radius').value);
+  const perMile = parseFloat(document.getElementById('set-per-mile').value);
+  const errEl   = document.getElementById('settings-error');
+  const okEl    = document.getElementById('settings-success');
+  const btn     = document.getElementById('btn-save-settings');
+  errEl.classList.add('hidden'); okEl.classList.add('hidden');
+  if (isNaN(baseFee) || isNaN(radius) || isNaN(perMile) || radius < 1) {
+    errEl.textContent = 'Please fill in all fields with valid numbers.'; errEl.classList.remove('hidden'); return;
+  }
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    for (const [key, value] of [['base_delivery_fee', baseFee], ['free_radius_miles', radius], ['per_mile_rate', perMile]]) {
+      const { error } = await sb.from('settings').upsert({ key, value: String(value), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+      if (error) throw error;
+    }
+    pricing.base_delivery_fee = baseFee;
+    pricing.free_radius_miles = radius;
+    pricing.per_mile_rate     = perMile;
+    okEl.classList.remove('hidden');
+    setTimeout(closeSettings, 1500);
+  } catch(e) {
+    errEl.textContent = 'Could not save: ' + (e.message || 'Unknown error'); errEl.classList.remove('hidden');
+  }
+  btn.textContent = 'Save Changes'; btn.disabled = false;
+}
 
 function showScreen(name) {
   ['auth','order','confirm'].forEach(s => {
@@ -252,17 +337,16 @@ async function handleAuth() {
   const errEl = document.getElementById('auth-error');
   const btn = document.getElementById('btn-auth');
   if (!email || !password) { showError(errEl, 'Please enter your email and password.'); return; }
-
   btn.textContent = 'Please wait…'; btn.disabled = true;
   try {
     let result;
     if (authMode === 'signup') {
       result = await sb.auth.signUp({ email, password });
       if (result.error) throw result.error;
-      if (result.data.user) {
+      if (result.data?.user) {
         const name = document.getElementById('input-name').value.trim();
         const phone = document.getElementById('input-phone').value.trim();
-        await sb.from('profiles').upsert({ id: result.data.user.id, role: 'customer', full_name: name || null, phone: phone || null });
+        await sb.from('profiles').upsert({ id: result.data.user.id, role: 'customer', full_name: name||null, phone: phone||null });
         currentUser = result.data.user;
       }
     } else {
@@ -273,23 +357,20 @@ async function handleAuth() {
     showOrderScreen();
   } catch(e) {
     showError(errEl, e.message || 'Authentication failed. Please try again.');
-    btn.textContent = authMode === 'signup' ? 'Create Account' : 'Sign In';
-    btn.disabled = false;
+    btn.textContent = authMode === 'signup' ? 'Create Account' : 'Sign In'; btn.disabled = false;
   }
 }
 
 async function signOut() {
   if (sb) await sb.auth.signOut();
   currentUser = null;
-  order = { material: null, qty: 1, serviceLevel: 'drop_and_go', address: '', notes: '' };
+  order = { material: null, qty: 1, serviceLevel: 'drop_and_go', address: '', notes: '', miles: 0 };
   currentStep = 1;
   showScreen('auth');
 }
 
 async function showOrderScreen() {
-  showScreen('order');
-  updateProgress();
-  await loadMaterials();
+  showScreen('order'); updateProgress(); await loadMaterials();
 }
 
 async function loadMaterials() {
@@ -298,7 +379,7 @@ async function loadMaterials() {
     const { data, error } = await sb.from('materials').select('*').eq('active', true).order('sort_order', { ascending: true });
     if (error) throw error;
     materials = data || [];
-    if (materials.length === 0) { list.innerHTML = '<p class="text-slate-400 text-center py-8">No materials available yet.</p>'; return; }
+    if (!materials.length) { list.innerHTML = '<p class="text-slate-400 text-center py-8">No materials available yet.</p>'; return; }
     list.innerHTML = materials.map(m => `
       <div class="card-select" onclick="selectMaterial('${m.id}')" id="mat-${m.id}">
         <div class="flex justify-between items-center">
@@ -311,8 +392,7 @@ async function loadMaterials() {
             <p class="text-slate-400 text-xs">per ${m.unit || 'unit'}</p>
           </div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   } catch(e) {
     list.innerHTML = `<p class="text-red-400 text-sm text-center py-4">Could not load materials: ${e.message}</p>`;
   }
@@ -335,122 +415,110 @@ function changeQty(delta) {
 
 function selectService(level) {
   order.serviceLevel = level;
-  ['drop_and_go','deliver_and_spread','full_service'].forEach(s => {
-    document.getElementById('svc-' + s).classList.toggle('selected', s === level);
-  });
+  ['drop_and_go','deliver_and_spread','full_service'].forEach(s =>
+    document.getElementById('svc-' + s).classList.toggle('selected', s === level));
 }
 
 function updateProgress() {
   const dots = document.getElementById('progress-dots');
   dots.innerHTML = Array.from({length: TOTAL_STEPS}, (_, i) => {
-    const n = i + 1;
-    const cls = n < currentStep ? 'done' : n === currentStep ? 'active' : '';
+    const n = i+1, cls = n < currentStep ? 'done' : n === currentStep ? 'active' : '';
     return `<div class="progress-dot ${cls}" style="flex:1;height:4px;border-radius:2px;"></div>`;
   }).join('');
-  const labels = ['Material', 'Quantity', 'Service', 'Address', 'Review'];
+  const labels = ['Material','Quantity','Service','Address','Review'];
   document.getElementById('step-label').textContent = `Step ${currentStep} of ${TOTAL_STEPS} — ${labels[currentStep-1]}`;
 }
 
 function showStep(n) {
-  document.querySelectorAll('.step').forEach((el, i) => el.classList.toggle('active', i+1 === n));
-  currentStep = n;
-  updateProgress();
-  document.getElementById('btn-back').classList.toggle('hidden', n === 1);
-  const btnNext = document.getElementById('btn-next');
-  btnNext.textContent = n === TOTAL_STEPS ? '🚛 Place Order' : 'Continue →';
-  if (n === TOTAL_STEPS) populateReview();
-  if (n === 2 && order.material) {
-    document.getElementById('material-unit-label').textContent = `Price: $${order.material.price_per_unit} per ${order.material.unit || 'unit'}`;
-    document.getElementById('qty-unit').textContent = order.material.unit || 'unit';
+  document.querySelectorAll('.step').forEach((el,i) => el.classList.toggle('active', i+1===n));
+  currentStep = n; updateProgress();
+  document.getElementById('btn-back').classList.toggle('hidden', n===1);
+  document.getElementById('btn-next').textContent = n===TOTAL_STEPS ? '🚛 Place Order' : 'Continue →';
+  if (n===TOTAL_STEPS) populateReview();
+  if (n===2 && order.material) {
+    document.getElementById('material-unit-label').textContent = `Price: $${order.material.price_per_unit} per ${order.material.unit||'unit'}`;
+    document.getElementById('qty-unit').textContent = order.material.unit||'unit';
     document.getElementById('price-estimate').textContent = '$' + (order.material.price_per_unit * order.qty).toFixed(2);
   }
 }
 
 function populateReview() {
   if (!order.material) return;
-  const fee = SERVICE_FEES[order.serviceLevel] || 0;
-  const total = (order.material.price_per_unit * order.qty) + fee;
+  const miles = parseFloat(document.getElementById('input-miles').value)||0;
+  const svcFee = SERVICE_FEES[order.serviceLevel]||0;
+  const delFee = calcDeliveryFee(miles);
+  const matCost = order.material.price_per_unit * order.qty;
+  const total = matCost + svcFee + delFee;
   const addr = [document.getElementById('input-address').value, document.getElementById('input-city').value].filter(Boolean).join(', ');
-  order.address = addr;
-  order.notes = document.getElementById('input-notes').value;
-  document.getElementById('rev-material').textContent = order.material.name;
-  document.getElementById('rev-qty').textContent = `${order.qty} ${order.material.unit || 'unit'}`;
-  document.getElementById('rev-service').textContent = SERVICE_LABELS[order.serviceLevel];
-  document.getElementById('rev-address').textContent = addr || '—';
-  document.getElementById('rev-total').textContent = '$' + total.toFixed(2);
+  order.address = addr; order.notes = document.getElementById('input-notes').value; order.miles = miles;
+  document.getElementById('rev-material').textContent      = order.material.name;
+  document.getElementById('rev-qty').textContent           = `${order.qty} ${order.material.unit||'unit'}`;
+  document.getElementById('rev-material-cost').textContent = '$' + matCost.toFixed(2);
+  document.getElementById('rev-service').textContent       = SERVICE_LABELS[order.serviceLevel];
+  document.getElementById('rev-delivery-fee').textContent  = '$' + delFee.toFixed(2);
+  document.getElementById('rev-address').textContent       = addr||'—';
+  document.getElementById('rev-total').textContent         = '$' + total.toFixed(2);
+  const svcRow = document.getElementById('rev-svc-fee-row');
+  if (svcFee > 0) { document.getElementById('rev-service-fee').textContent = '+$'+svcFee.toFixed(2); svcRow.classList.remove('hidden'); }
+  else { svcRow.classList.add('hidden'); }
 }
 
 function nextStep() {
   const stepErr = document.getElementById('step-error');
   stepErr.classList.add('hidden');
-  if (currentStep === 1) {
-    if (!order.material) { stepErr.textContent = 'Please select a material first.'; stepErr.classList.remove('hidden'); return; }
-  }
-  if (currentStep === 4) {
+  if (currentStep===1 && !order.material) { stepErr.textContent='Please select a material first.'; stepErr.classList.remove('hidden'); return; }
+  if (currentStep===4) {
     const addr = document.getElementById('input-address').value.trim();
-    if (!addr) { stepErr.textContent = 'Please enter a delivery address.'; stepErr.classList.remove('hidden'); return; }
+    const miles = parseFloat(document.getElementById('input-miles').value);
+    if (!addr) { stepErr.textContent='Please enter a delivery address.'; stepErr.classList.remove('hidden'); return; }
+    if (!miles||miles<1) { stepErr.textContent='Please enter your distance from our location (miles).'; stepErr.classList.remove('hidden'); return; }
   }
-  if (currentStep === TOTAL_STEPS) { placeOrder(); return; }
-  showStep(currentStep + 1);
+  if (currentStep===TOTAL_STEPS) { placeOrder(); return; }
+  showStep(currentStep+1);
 }
 
 function prevStep() {
   document.getElementById('step-error').classList.add('hidden');
-  if (currentStep > 1) showStep(currentStep - 1);
+  if (currentStep>1) showStep(currentStep-1);
 }
 
 async function placeOrder() {
-  const btn = document.getElementById('btn-next');
-  const errEl = document.getElementById('order-error');
-  btn.textContent = 'Placing order…'; btn.disabled = true;
-  errEl.classList.add('hidden');
-
+  const btn=document.getElementById('btn-next'), errEl=document.getElementById('order-error');
+  btn.textContent='Placing order…'; btn.disabled=true; errEl.classList.add('hidden');
   try {
-    const fee = SERVICE_FEES[order.serviceLevel] || 0;
+    const svcFee = SERVICE_FEES[order.serviceLevel]||0;
+    const delFee = calcDeliveryFee(order.miles);
     const subtotal = order.material.price_per_unit * order.qty;
-    const total = subtotal + fee;
-
-    const payload = {
-      customer_id:    currentUser.id,
-      material_id:    order.material.id,
-      quantity:       order.qty,
-      material_unit:  order.material.unit,
-      truck_type:     'dump_truck',
-      service_level:  order.serviceLevel,
-      delivery_address: order.address,
-      delivery_notes: order.notes || null,
-      risk_level:     'low',
-      status:         'pending',
-      base_price:     subtotal,
-      service_fee:    fee,
-      risk_premium:   0,
-      total_amount:   total,
-    };
-
-    const { data, error } = await sb.from('orders').insert(payload).select().single();
+    const total = subtotal + svcFee + delFee;
+    const { data, error } = await sb.from('orders').insert({
+      customer_id: currentUser.id, material_id: order.material.id,
+      quantity: order.qty, material_unit: order.material.unit, truck_type: 'dump_truck',
+      service_level: order.serviceLevel, delivery_address: order.address,
+      delivery_notes: order.notes||null, delivery_miles: order.miles,
+      risk_level: 'low', status: 'pending',
+      base_price: subtotal, service_fee: svcFee, delivery_fee: delFee,
+      risk_premium: 0, total_amount: total,
+    }).select().single();
     if (error) throw error;
-
-    document.getElementById('conf-material').textContent = order.material.name;
-    document.getElementById('conf-qty').textContent = `${order.qty} ${order.material.unit || 'unit'}`;
-    document.getElementById('conf-service').textContent = SERVICE_LABELS[order.serviceLevel];
-    document.getElementById('conf-total').textContent = '$' + total.toFixed(2);
-    document.getElementById('confirm-order-id').textContent = 'Order #' + data.id.slice(0,8).toUpperCase();
+    document.getElementById('conf-material').textContent     = order.material.name;
+    document.getElementById('conf-qty').textContent          = `${order.qty} ${order.material.unit||'unit'}`;
+    document.getElementById('conf-service').textContent      = SERVICE_LABELS[order.serviceLevel];
+    document.getElementById('conf-delivery-fee').textContent = '$'+delFee.toFixed(2);
+    document.getElementById('conf-total').textContent        = '$'+total.toFixed(2);
+    document.getElementById('confirm-order-id').textContent  = 'Order #'+data.id.slice(0,8).toUpperCase();
     showScreen('confirm');
   } catch(e) {
-    showError(errEl, 'Could not place order: ' + (e.message || 'Unknown error'));
-    btn.textContent = '🚛 Place Order'; btn.disabled = false;
+    showError(errEl, 'Could not place order: '+(e.message||'Unknown error'));
+    btn.textContent='🚛 Place Order'; btn.disabled=false;
   }
 }
 
 function newOrder() {
-  order = { material: null, qty: 1, serviceLevel: 'drop_and_go', address: '', notes: '' };
-  currentStep = 1;
-  showOrderScreen();
+  order={material:null,qty:1,serviceLevel:'drop_and_go',address:'',notes:'',miles:0};
+  currentStep=1; selectService('drop_and_go'); showOrderScreen();
 }
 
-function showError(el, msg) {
-  el.textContent = msg; el.classList.remove('hidden');
-}
+function showError(el,msg){el.textContent=msg;el.classList.remove('hidden');}
 </script>
 </body>
 </html>
